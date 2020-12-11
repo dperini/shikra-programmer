@@ -1,5 +1,11 @@
-#! /usr/bin/env python
+#!/usr/bin/env python3
 
+# ====================== #
+# shikra python3 porting #
+# diego.perini@gmail.com #
+# ====================== #
+
+import array
 import cmd
 import usb.core
 import struct
@@ -10,14 +16,19 @@ ID_VENDOR = 0x403
 ID_PRODUCT = 0x6014
 USB_RELEASE_VERSION = 0x0900
 EEPROM_SIZE = 256
-BYTES_AT_A_TIME = 2  # we need to read 2 "bytes" at a time since each word in eeprom is 16bit, so 2 8bit bytes in python.
+
+# we need to read 2 bytes at a time since each word in eeprom is 16bit, so 2 8bit bytes in python.
+BYTES_AT_A_TIME = 2
+
 # this is the minimum amount of data we can do on a CTRL transfer.
 READ_REQ_TYPE = 0xc0
 READ_REQ = 0x90
 READ_VAL = 0
 WRITE_REQ_TYPE = 0x40
 WRITE_REQ = 0x91
-DUMP_WIDTH = 16  # how many python bytes to print per row in a hex dump. this is 8, 16bit words per line.
+
+# how many python bytes to print per row in a hex dump. this is 8, 16bit words per line.
+DUMP_WIDTH = 16
 
 # shikra LED eeprom values
 LED_TX = 0x10
@@ -63,7 +74,7 @@ class ShikraCLI(cmd.Cmd):
         return True
 
     def do_EOF(self, args):
-        print ""
+        print("bye!")
         return True
 
     def do_find_shikra(self, args):
@@ -71,28 +82,30 @@ class ShikraCLI(cmd.Cmd):
             Look for Shikra USB device and do initial configuration.
             This should be run before other configuration steps.
         '''
-        print "[+] Looking for Shikra..."
+        print("[+] Looking for Shikra...")
         found = SHIKRA.find()
         if(found):
-            print "[+] Shikra device found."
+            print("[+] Shikra device found.")
             SHIKRA.config()
             # go to subloop if device is found.
             foundcli = ShikraFoundCLI()
             foundcli.cmdloop()
 
         else:
-            print "[+] Shikra device not found. Try unplugging and plugging the Shikra back in."
+            print("[+] Shikra device not found. Try unplugging and plugging the Shikra back in.")
 
     def welcome(self):
             line = "[+] Welcome to the SHIKRA programming utility by XIPITER.\n"
             shikra_logo = '''
-  ###### ###  ##  ###  ###  ##  ######      ####
- ###  ## ###  ##  ###  ### ##   ###  ##    #####
- ####    ###  ##  ###  #####    ###  ##   ## ###
-  #####  #######  ###  #####    ######   ##  ###
-    #### ###  ##  ###  ### ##   ### ##  ########
- ##  ### ###  ##  ###  ###  ##  ###  ## ##   ###
-  #####  ###  ##  ###  ###  ##  ###  ## ##   ###
+  ██████  ██░ ██  ██▓ ██ ▄█▀ ██▀███   ▄▄▄
+▒██    ▒ ▓██░ ██▒▓██▒ ██▄█▒ ▓██ ▒ ██▒▒████▄
+░ ▓██▄   ▒██▀▀██░▒██▒▓███▄░ ▓██ ░▄█ ▒▒██  ▀█▄
+  ▒   ██▒░▓█ ░██ ░██░▓██ █▄ ▒██▀▀█▄  ░██▄▄▄▄██
+▒██████▒▒░▓█▒░██▓░██░▒██▒ █▄░██▓ ▒██▒ ▓█   ▓██▒
+▒ ▒▓▒ ▒ ░ ▒ ░░▒░▒░▓  ▒ ▒▒ ▓▒░ ▒▓ ░▒▓░ ▒▒   ▓▒█░
+░ ░▒  ░ ░ ▒ ░▒░ ░ ▒ ░░ ░▒ ▒░  ░▒ ░ ▒░  ▒   ▒▒ ░
+░  ░  ░   ░  ░░ ░ ▒ ░░ ░░ ░   ░░   ░   ░   ▒
+      ░   ░  ░  ░ ░  ░  ░      ░           ░  ░
 '''
             return line + shikra_logo
 
@@ -108,7 +121,7 @@ class ShikraFoundCLI(cmd.Cmd):
         return True
 
     def do_EOF(self, args):
-        print ""
+        print("bye!")
         return True
 
     def do_set_led_tx(self, args):
@@ -159,7 +172,7 @@ class ShikraFoundCLI(cmd.Cmd):
             in Hex dump format.
         '''
         dump = SHIKRA.dumpEEPROM()
-        print SHIKRA.printEEPROM(dump)
+        print(SHIKRA.printEEPROM(dump))
 
     def do_print_config(self, args):
         '''
@@ -168,7 +181,7 @@ class ShikraFoundCLI(cmd.Cmd):
             the EEPROM values that will be written on `write_config` command.
         '''
         template = SHIKRA.createEEPROMWriteTemplate()
-        print SHIKRA.printEEPROM(template)
+        print(SHIKRA.printEEPROM(template))
 
     def do_factory_reset(self, args):
         '''
@@ -194,11 +207,11 @@ class ShikraFoundCLI(cmd.Cmd):
                 eeprom_string = SHIKRA.printEEPROM(template)
                 f.write(eeprom_string)
                 f.close()
-                print "[+] Backup successful to file: {0}".format(filename)
+                print("[+] Backup successful to file: {0}".format(filename))
             except:
-                print "[+] Trouble writing to file {0}".format(filename)
+                print("[+] Trouble writing to file {0}".format(filename))
         else:
-            print "[+] Filename needed."
+            print("[+] Filename needed.")
 
     def do_restore_from_backup(self, filename):
         '''
@@ -211,7 +224,7 @@ class ShikraFoundCLI(cmd.Cmd):
         '''
             Warn users that LED functions for older shikra models may not work.
         '''
-        print "[+] WARNING: LED programming methods may not work for older Shikra Models."
+        print("[+] WARNING: LED programming methods may not work for older Shikra Models.")
 
 
 class Shikra():
@@ -270,10 +283,10 @@ class Shikra():
         '''
         addrcount = 0
         string_struct = ""
-        for index in xrange(EEPROM_SIZE / BYTES_AT_A_TIME):
+        for index in range(int(EEPROM_SIZE / BYTES_AT_A_TIME)):
             byte = self.readWordFromEEPROM(addrcount)
-            string_struct += struct.pack(">B", byte[0])
-            string_struct += struct.pack(">B", byte[1])
+            string_struct += str(struct.pack(">B", byte[0]))
+            string_struct += str(struct.pack(">B", byte[1]))
             addrcount += 1
         eeprom_list = []
         for byte in string_struct:
@@ -288,7 +301,7 @@ class Shikra():
         eeprom_string = ""
         width = 0
         count = 0
-        for index in xrange(EEPROM_SIZE / BYTES_AT_A_TIME):
+        for index in range(int(EEPROM_SIZE / BYTES_AT_A_TIME)):
             byte0 = "{0:0{1}x}".format(ord(eeprom_list[count]), 2).upper()
             byte1 = "{0:0{1}x}".format(ord(eeprom_list[count + 1]), 2).upper()
             if(width < DUMP_WIDTH):
@@ -310,7 +323,7 @@ class Shikra():
         '''
         write zeros to all 128bytes of shikra EEPROM.
         '''
-        for index in xrange(EEPROM_SIZE / BYTES_AT_A_TIME):
+        for index in range(int(EEPROM_SIZE / BYTES_AT_A_TIME)):
             # we can read and write 2
             self.writeWordToEEPROM(index, 0x0000)
 
@@ -318,7 +331,7 @@ class Shikra():
         '''
         return to factory defaults of 0xffff for every word
         '''
-        for index in xrange(EEPROM_SIZE / BYTES_AT_A_TIME):
+        for index in range(int(EEPROM_SIZE / BYTES_AT_A_TIME)):
             self.writeWordToEEPROM(index, 0xFFFF)
 
     def setLEDOff(self):
@@ -356,7 +369,7 @@ class Shikra():
         write out packed data structure to eeprom on device.
         '''
         count = 0
-        for index in xrange(EEPROM_SIZE / BYTES_AT_A_TIME):
+        for index in range(int(EEPROM_SIZE / BYTES_AT_A_TIME)):
             byte0 = struct.unpack('>B', eeprom_template[count])[0]
             byte1 = struct.unpack('>B', eeprom_template[count + 1])[0]
             word = self.bytesToWord(byte1, byte0)  # swap here for endian-ness
@@ -407,15 +420,15 @@ class Shikra():
         try:
             fd = open(filename, "r")
         except:
-            print "[+] ERROR File \"{0}\" does not exist or permissions are wrong.".format(filename)
+            print("[+] ERROR File \"{0}\" does not exist or permissions are wrong.".format(filename))
             sys.exit(1)
-        print "[+] Reading EEPROM backup from {0}".format(filename)
+        print("[+] Reading EEPROM backup from {0}".format(filename))
         temp_eeprom_array = []
         for line in fd:
             line_tuple = line.strip().split(" ")
             for element in line_tuple:
                 temp_eeprom_array.append(int(element, 16))
-        print "[+] Writing EEPROM backup from {0} to Shikra".format(filename)
+        print("[+] Writing EEPROM backup from {0} to Shikra".format(filename))
         for index, element in enumerate(temp_eeprom_array):
             self.writeWordToEEPROM(index, element)
         fd.close()
@@ -426,12 +439,10 @@ class Shikra():
         This template can be fed to other methods to print the template or write
         the template to eeprom on a shikra device's eeprom.
         input - mode, defaults to RS232/UART mode.
-
         This is where most of the 'magic' happens. This is where most of the bytes to
         'bootstrap' the eeprom to a FT_PROG readable state happen here. This includes
         setting the manufacturer, product, and serial number, as well as many other
         configurations.
-
         This is a little messy, but dealing with raw bytes is probably not the cleanest :P
         '''
         # the shikra eeprom uses 16bit word sizes, so therefore we have
@@ -445,7 +456,9 @@ class Shikra():
         manufacturer_string = "XIPITER"
         product_string = "SHIKRA"
         serial_string = "XIP12345"
-        temp_eeprom_array = ["\x00" for x in xrange(EEPROM_SIZE)]  # initialize with 0x0 bytes
+
+        # initialize with 0x0 bytes
+        temp_eeprom_array = [struct.pack('>B', 0) for x in range(EEPROM_SIZE)]
 
         # write shikra mode
         temp_eeprom_array[0x1] = struct.pack('>B', 0)
@@ -479,7 +492,7 @@ class Shikra():
             byte1 = 0x0
 
         byte2 = byte0 + byte1
-        temp = (current / 2) << 8 | byte2
+        temp = (current // 2) << 8 | byte2
         t = self.wordToBytes(temp)
         temp_eeprom_array[0x8] = struct.pack('>B', t[1])
         temp_eeprom_array[0x9] = struct.pack('>B', t[0])
